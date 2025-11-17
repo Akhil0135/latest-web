@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Surprise</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+body { overflow:hidden; background:black; transition:background 2s ease-in-out; }
+#cross { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); font-size:48px; font-weight:900; color:white; text-shadow:0 0 5px #fff,0 0 10px #fff,0 0 20px #ffd700; z-index:1000; transition: color 1s ease;}
+#content { position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; flex-direction:column; text-align:center; color:white; transition: opacity 1.5s ease; z-index:900;}
+.fade { opacity:0; transition:opacity 1.5s ease;}
+.show { opacity:1;}
+#surpriseBtn, #verseBtn { padding:12px 22px; border:none; border-radius:8px; font-size:18px; cursor:pointer; display:none; z-index:1001; transition: transform 0.3s ease;}
+#surpriseBtn { background:#ff4d6d; color:white;}
+#verseBtn { background:#4d94ff; color:white;}
+#surpriseBtn:hover,#verseBtn:hover { transform:scale(1.1);}
+.stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;}
+.star { position:absolute; width:2px; height:2px; background:white; border-radius:50%; opacity:0.8; animation:twinkle 2s infinite alternate;}
+@keyframes twinkle { from{opacity:0.3;} to{opacity:1;} }
+.butterfly, .petal, .rose { position:absolute; pointer-events:none; }
+.butterfly { width:40px; height:40px; background:url('https://i.imgur.com/Exd6R0b.png') no-repeat center/contain; }
+.petal { width:25px; height:25px; background:url('https://i.imgur.com/8eQXK0R.png') no-repeat center/contain; opacity:0.9; }
+.rose { width:28px; height:28px; background:url('https://i.imgur.com/Wp8mFh0.png') no-repeat center/contain; opacity:0.9; }
+#moon, #sun { position:fixed; width:120px; height:120px; background-size:contain; background-repeat:no-repeat; top:50px; right:50px; z-index:500; transition:all 2s ease-in-out;}
+#moon { background-image:url('https://i.imgur.com/Mt1x5QH.png'); }
+#sun { background-image:url('https://i.imgur.com/VxZDJ0X.png'); display:none;}
+</style>
+</head>
+<body>
+
+<div id="cross">✝</div>
+<div id="content"></div>
+<div id="stars" class="stars"></div>
+<button id="surpriseBtn">Tap for Surprise</button>
+<button id="verseBtn">Verse for You</button>
+<img id="moon">
+<img id="sun">
+
+<script>
+const content=document.getElementById("content");
+const cross=document.getElementById("cross");
+const btn=document.getElementById("surpriseBtn");
+const verseBtn=document.getElementById("verseBtn");
+const starsContainer=document.getElementById("stars");
+const moon=document.getElementById("moon");
+const sun=document.getElementById("sun");
+
+// Fade content
+function fadeContent(html,color="white"){
+    content.classList.remove("show");
+    setTimeout(()=>{content.innerHTML=html;content.style.color=color;content.classList.add("show");},300);
+}
+
+// Clear elements
+function clearElements(className){document.querySelectorAll(`.${className}`).forEach(el=>el.remove());}
+function clearStars(){starsContainer.innerHTML="";}
+
+// Create moving stars
+function createStars(count=70){
+    clearStars();
+    for(let i=0;i<count;i++){
+        let s=document.createElement("div"); s.className="star";
+        s.style.top=Math.random()*100+"vh"; s.style.left=Math.random()*100+"vw";
+        s.style.animationDuration=(Math.random()*2+1)+"s";
+        starsContainer.appendChild(s);
+    }
+}
+
+// Animate falling petals/roses
+function animateFalling(className,count,image){
+    clearElements(className);
+    for(let i=0;i<count;i++){
+        let e=document.createElement("div");
+        e.className=className;
+        e.style.backgroundImage=`url(${image})`;
+        e.style.left=Math.random()*100+"vw";
+        e.style.top=(-50-Math.random()*200)+"px";
+        let speed=3+Math.random()*3;
+        (function(el,speed){
+            function fall(){ 
+                let top=parseFloat(el.style.top);
+                el.style.top=(top+speed)+"px";
+                if(top>window.innerHeight){el.style.top=(-50-Math.random()*200)+"px"; el.style.left=Math.random()*100+"vw";}
+                requestAnimationFrame(fall);
+            }
+            fall();
+        })(e,speed);
+        document.body.appendChild(e);
+    }
+}
+
+// Animate butterflies flying in curves
+function animateButterflies(count){
+    clearElements("butterfly");
+    let centerX=window.innerWidth/2;
+    let centerY=window.innerHeight/2;
+    for(let i=0;i<count;i++){
+        let b=document.createElement("div"); b.className="butterfly";
+        b.style.left=centerX+"px"; b.style.top=centerY+"px";
+        document.body.appendChild(b);
+        let angle=Math.random()*Math.PI*2;
+        let radius=50+Math.random()*100;
+        let speed=0.01+Math.random()*0.02;
+        (function(el,angle,radius,speed){
+            function fly(){
+                angle+=speed;
+                let x=centerX+Math.cos(angle)*radius;
+                let y=centerY+Math.sin(angle)*radius - Math.sin(angle*2)*30;
+                el.style.left=x+"px"; el.style.top=y+"px";
+                requestAnimationFrame(fly);
+            }
+            fly();
+        })(b,angle,radius,speed);
+    }
+}
+
+// Phase Night
+function phaseNight(){
+    document.body.style.background="url('https://i.imgur.com/3GgKMZt.jpeg') center/cover no-repeat";
+    cross.style.color="white"; moon.style.display="block"; sun.style.display="none";
+    createStars();
+    fadeContent("<h2 style='font-family:Cursive;'>✨ A blessed night under the moon ✨</h2>");
+}
+
+// Phase Day
+function phaseDay(){
+    document.body.style.background="url('https://i.imgur.com/l2V9B7f.jpeg') center/cover no-repeat";
+    cross.style.color="black"; sun.style.display="block"; moon.style.display="none";
+    clearStars();
+    fadeContent("<h2 style='font-family:Fantasy;'>🌞 A beautiful new day 🌞</h2>");
+}
+
+// Birthday Phase with Name Reveal via Butterflies
+function phaseBirthday(){
+    document.body.style.background="url('https://i.imgur.com/E6v3s4Q.jpeg') center/cover no-repeat";
+    cross.style.color="black";
+    fadeContent("<div id='name' style='font-size:60px;font-family:Cursive;color:#FFD700;'>Rachael</div>");
+    animateFalling("petal",20,"https://i.imgur.com/8eQXK0R.png");
+    animateFalling("rose",15,"https://i.imgur.com/Wp8mFh0.png");
+    setTimeout(()=>animateButterflies(10),500);
+    setTimeout(()=>{btn.style.display="block";},1000);
+}
+
+// Final Phase
+function phaseFinal(){
+    document.body.style.background="#001652"; cross.style.color="white";
+    fadeContent("<h2 style='font-family:Georgia,serif;color:#FFD700;'>You are the rhythm to my heartbeat, the blessing my prayers found.</h2>");
+    clearElements("petal"); clearElements("rose"); clearElements("butterfly"); clearElements("snow");
+    animateFalling("snow",40,"https://i.imgur.com/8eQXK0R.png");
+    setTimeout(()=>{verseBtn.style.display="block";},2000);
+}
+
+// Verse Button Click
+verseBtn.onclick=function(){
+    verseBtn.style.display="none";
+    fadeContent("<h2 style='font-family:Palatino,serif;color:#FFD700;'>“Charm is deceptive, and beauty is fleeting; but a woman who fears the Lord is to be praised.” — Proverbs 31:30</h2>");
+}
+
+// Button Clicks
+btn.onclick=function(){btn.style.display="none"; phaseFinal();}
+
+// Start Phases (Night 7s, Day 9s, Birthday 7s)
+phaseNight();
+setTimeout(phaseDay,7000);
+setTimeout(phaseBirthday,16000);
+</script>
+</body>
+</html>
